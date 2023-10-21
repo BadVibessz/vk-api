@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/joho/godotenv"
 	"io"
 	"log"
 	http "net/http"
@@ -12,18 +13,6 @@ import (
 	"strconv"
 	vkapi "vk-api"
 )
-
-//func ContextClient(ctx context.Context) *http.Client {
-//	if ctx != nil {
-//		if hc, ok := ctx.Value(HTTPClient).(*http.Client); ok {
-//			return hc
-//		}
-//	}
-//	if appengineClientHook != nil {
-//		return appengineClientHook(ctx)
-//	}
-//	return http.DefaultClient
-//}
 
 func PrettyString(str string) (string, error) {
 	var prettyJSON bytes.Buffer
@@ -33,7 +22,15 @@ func PrettyString(str string) (string, error) {
 	return prettyJSON.String(), nil
 }
 
+func loadEnv() {
+	if err := godotenv.Load(); err != nil {
+		log.Print("no .env file found")
+	}
+}
+
 func main() {
+
+	loadEnv()
 
 	logger := log.New(os.Stderr, "", 3)
 
@@ -51,15 +48,20 @@ func main() {
 	//	logger.Println(err)
 	//}
 
+	token, exists := os.LookupEnv("VK_API_TOKEN")
+	if !exists {
+		logger.Panicln("VK_API_TOKEN not specified in env")
+	}
+
 	vk := vkapi.VkAPI{
-		Token:   "...",
+		Token:   token,
 		Version: "5.154",
 		Client:  &client,
 	}
 
 	resp, err := vk.SendMessage(ctx, vkapi.Params{
-		"message":   "=)",
-		"random_id": strconv.Itoa(0),
+		"message":   "мбэп)",
+		"random_id": "0",
 		"peer_id":   strconv.Itoa(2000000000 + 1),
 	})
 	if err != nil {

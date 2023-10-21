@@ -92,14 +92,20 @@ type VkAPI struct {
 }
 
 // todo: return VkResponse
-func (vk *VkAPI) call(ctx context.Context, method string, body Params) (*http.Response, error) {
+func (vk *VkAPI) call(ctx context.Context, method string, params Params) (*http.Response, error) {
 
-	queryParams := make(Params)
-	queryParams["access_token"] = vk.Token
-	queryParams["v"] = vk.Version
-	// queryParams["oauth"] = vk.Version
+	//queryParams := make(Params)
+	//queryParams["access_token"] = vk.Token
+	//queryParams["v"] = vk.Version
+	//queryParams["random_id"] = "0"
 
-	resp, err := vk.Client.Post(ctx, method, queryParams, body)
+	// add credentials
+	// todo: understand where to pass token, header or as query param (security question)
+	params["access_token"] = vk.Token
+	params["v"] = vk.Version
+
+	// todo: there's no difference between POST and GET in VK API
+	resp, err := vk.Client.Get(ctx, method, params)
 	if err != nil {
 		return nil, err
 	}
@@ -109,9 +115,9 @@ func (vk *VkAPI) call(ctx context.Context, method string, body Params) (*http.Re
 
 // todo: return VkResponse
 // SendMessage https://dev.vk.com/ru/method/messages.send
-func (vk *VkAPI) SendMessage(ctx context.Context, body Params) (*http.Response, error) {
+func (vk *VkAPI) SendMessage(ctx context.Context, params Params) (*http.Response, error) {
 
-	resp, err := vk.call(ctx, "messages.send/", body)
+	resp, err := vk.call(ctx, "messages.send/", params)
 	if err != nil {
 		return nil, err
 	}
