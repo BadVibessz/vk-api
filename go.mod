@@ -1,4 +1,4 @@
-module vk-api
+module github.com/BadVibessz/vk-api
 
 go 1.21
 

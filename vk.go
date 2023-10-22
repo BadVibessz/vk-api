@@ -65,9 +65,13 @@ func (c *Client) Post(ctx context.Context, url string, queryParams, body Params)
 	return resp, nil
 }
 
-func (c *Client) Get(ctx context.Context, url string, queryParams Params) (*http.Response, error) {
+func (c *Client) Get(ctx context.Context, url string, headers, queryParams Params) (*http.Response, error) {
 
 	req, err := http.NewRequestWithContext(ctx, "GET", c.BaseURL+url, nil)
+
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
 
 	if queryParams != nil {
 		q := req.URL.Query()
@@ -91,21 +95,20 @@ type VkAPI struct {
 	Version string
 }
 
-// todo: return VkResponse
-func (vk *VkAPI) call(ctx context.Context, method string, params Params) (*http.Response, error) {
+// Call todo: return VkResponse?
+//
+// Generic method for calling VK API with specified query parameters
+// https://dev.vk.com/ru/api/api-requests
+func (vk *VkAPI) Call(ctx context.Context, method string, params Params) (*http.Response, error) {
 
-	//queryParams := make(Params)
-	//queryParams["access_token"] = vk.Token
-	//queryParams["v"] = vk.Version
-	//queryParams["random_id"] = "0"
+	headers := Params{
+		"Authorization": "Bearer " + vk.Token,
+	}
 
-	// add credentials
-	// todo: understand where to pass token, header or as query param (security question)
-	params["access_token"] = vk.Token
 	params["v"] = vk.Version
 
-	// todo: there's no difference between POST and GET in VK API
-	resp, err := vk.Client.Get(ctx, method, params)
+	// todo: Если вы передаёте большие данные (больше 2 Кбайт), используйте запрос POST и формат multipart/form-data.
+	resp, err := vk.Client.Get(ctx, method, headers, params)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +120,7 @@ func (vk *VkAPI) call(ctx context.Context, method string, params Params) (*http.
 // SendMessage https://dev.vk.com/ru/method/messages.send
 func (vk *VkAPI) SendMessage(ctx context.Context, params Params) (*http.Response, error) {
 
-	resp, err := vk.call(ctx, "messages.send/", params)
+	resp, err := vk.Call(ctx, "messages.send/", params)
 	if err != nil {
 		return nil, err
 	}
